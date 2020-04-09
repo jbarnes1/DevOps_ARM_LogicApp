@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "workflows_jbupslargeEDIProcess_name": {
-            "value": null
+            "value": "jbLogicApp"
         },
         "integrationAccounts_jbupsiseintacct_externalid": {
             "value": null
