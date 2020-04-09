@@ -6,13 +6,10 @@
             "value":"jbupslargeEDIProcess"
         },
         "integrationAccounts_jbupsiseintacct_externalid": {
-            "value": "jbupsiseintacct"
-        },
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Logic/integrationServiceEnvironments/jbupsiseenv"},
         "sites_EdiSplitterFunc_externalid": {
-            "value": "EdiSplitterFunc"
-        },
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Web/sites/EdiSplitterFunc"},
         "connections_azureblob_externalid": {
-            "value": "azureblob"
-        }
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Storage/storageAccounts/jbupsisesagen2"}
     }
 }
