@@ -3,13 +3,13 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "workflows_jbupslargeEDIProcess_name": {
-            "value":"jbupslargeEDIProcess"
+            "value":"jbupslargeedi"
         },
         "integrationAccounts_jbupsiseintacct_externalid": {
-            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Logic/integrationServiceEnvironments/jbupsiseenv"},
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsbtspaas/providers/Microsoft.Logic/integrationAccounts/jbupsbtspaasintacct"},
         "sites_EdiSplitterFunc_externalid": {
-            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Web/sites/EdiSplitterFunc"},
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsbtspaas/providers/Microsoft.Web/connections/x12-1"},
         "connections_azureblob_externalid": {
-            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Storage/storageAccounts/jbupsisesagen2"}
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsbtspaas/providers/Microsoft.Web/connections/azureblob-1"}
     }
 }
