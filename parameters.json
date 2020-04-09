@@ -3,16 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "workflows_jbupslargeEDIProcess_name": {
-            "value": "jbLogicApp"
+            "value": https://raw.githubusercontent.com/jbarnes1/DevOps_ARM_LogicApp/master/parameters.json
         },
         "integrationAccounts_jbupsiseintacct_externalid": {
-            "value": null
+            "value": "jbupsiseintacct"
         },
         "sites_EdiSplitterFunc_externalid": {
-            "value": null
+            "value": "EdiSplitterFunc"
         },
         "connections_azureblob_externalid": {
-            "value": null
+            "value": "azureblob"
         }
     }
 }
