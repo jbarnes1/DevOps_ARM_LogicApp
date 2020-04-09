@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "workflows_jbupslargeEDIProcess_name": {
-            "value": https://raw.githubusercontent.com/jbarnes1/DevOps_ARM_LogicApp/master/parameters.json
+            "value":"jbupslargeEDIProcess"
         },
         "integrationAccounts_jbupsiseintacct_externalid": {
             "value": "jbupsiseintacct"
