@@ -8,7 +8,7 @@
         "integrationAccounts_jbupsiseintacct_externalid": {
             "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsbtspaas/providers/Microsoft.Logic/integrationAccounts/jbupsbtspaasintacct"},
         "sites_EdiSplitterFunc_externalid": {
-            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsbtspaas/providers/Microsoft.Web/connections/x12-1"},
+            "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Web/sites/EdiSplitterFunc"},
         "connections_azureblob_externalid": {
             "value": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsbtspaas/providers/Microsoft.Web/connections/azureblob-1"}
     }
