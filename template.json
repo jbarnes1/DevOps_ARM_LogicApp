@@ -1,0 +1,359 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_jbupslargeEDIProcess_name": {
+            "defaultValue": "jbupslargeEDIProcess",
+            "type": "String"
+        },
+        "integrationAccounts_jbupsiseintacct_externalid": {
+            "defaultValue": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Logic/integrationAccounts/jbupsiseintacct",
+            "type": "String"
+        },
+        "sites_EdiSplitterFunc_externalid": {
+            "defaultValue": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Web/sites/EdiSplitterFunc",
+            "type": "String"
+        },
+        "connections_azureblob_externalid": {
+            "defaultValue": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/resourceGroups/jbupsiserg/providers/Microsoft.Web/connections/azureblob",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_jbupslargeEDIProcess_name')]",
+            "location": "eastus2",
+            "properties": {
+                "state": "Enabled",
+                "integrationAccount": {
+                    "id": "[parameters('integrationAccounts_jbupsiseintacct_externalid')]"
+                },
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "When_a_blob_is_added_or_modified_(properties_only)": {
+                            "recurrence": {
+                                "frequency": "Hour",
+                                "interval": 1
+                            },
+                            "splitOn": "@triggerBody()",
+                            "metadata": {
+                                "JTJmZWRpLWluY29taW5n": "/edi-incoming",
+                                "JTJmZWRpZmlsZXM=": "/edifiles"
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/datasets/default/triggers/batch/onupdatedfile",
+                                "queries": {
+                                    "folderId": "JTJmZWRpLWluY29taW5n",
+                                    "maxFileCount": 1
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Condition": {
+                            "actions": {
+                                "Compose": {
+                                    "runAfter": {
+                                        "Copy_blob__TO_edi-process-split": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Compose",
+                                    "inputs": {
+                                        "blobFileItem": "@{triggerBody()}",
+                                        "blobFileName": "@{triggerBody()?['Name']}",
+                                        "blobFilePath": "@{triggerBody()?['Path']}"
+                                    }
+                                },
+                                "Compose_2": {
+                                    "runAfter": {
+                                        "Function1__SPLIT_Half_2": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Compose",
+                                    "inputs": {
+                                        "Status": "COPYING FILES"
+                                    }
+                                },
+                                "Compose_Status:_Delete_Files": {
+                                    "runAfter": {
+                                        "Copy_blob_Split_File_B__To_EDI_Incoming": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Compose",
+                                    "inputs": {
+                                        "Status": "DELETING FILES"
+                                    }
+                                },
+                                "Compose_Status:_Done": {
+                                    "runAfter": {
+                                        "Delete_blob_Large_File": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Compose",
+                                    "inputs": {
+                                        "status": "DONE!"
+                                    }
+                                },
+                                "Copy_blob_Split_File_A_To_EDI_Incoming": {
+                                    "runAfter": {
+                                        "Compose_2": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/datasets/default/copyFile",
+                                        "queries": {
+                                            "destination": "/edi-incoming/",
+                                            "overwrite": true,
+                                            "queryParametersSingleEncoded": true,
+                                            "source": "/edi-process-split/A_@{triggerBody()?['Name']}"
+                                        }
+                                    }
+                                },
+                                "Copy_blob_Split_File_B__To_EDI_Incoming": {
+                                    "runAfter": {
+                                        "Copy_blob_Split_File_A_To_EDI_Incoming": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/datasets/default/copyFile",
+                                        "queries": {
+                                            "destination": "/edi-incoming/",
+                                            "overwrite": true,
+                                            "queryParametersSingleEncoded": true,
+                                            "source": "/edi-process-split/B_@{triggerBody()?['Name']}"
+                                        }
+                                    }
+                                },
+                                "Copy_blob_TO_edi-archive": {
+                                    "runAfter": {},
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/datasets/default/copyFile",
+                                        "queries": {
+                                            "destination": "/edi-archive/@{triggerBody()?['Name']}",
+                                            "overwrite": true,
+                                            "queryParametersSingleEncoded": true,
+                                            "source": "@triggerBody()?['Path']"
+                                        }
+                                    }
+                                },
+                                "Copy_blob__TO_edi-process-split": {
+                                    "runAfter": {
+                                        "Copy_blob_TO_edi-archive": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/datasets/default/copyFile",
+                                        "queries": {
+                                            "destination": "/edi-process-split/@{triggerBody()?['Name']}",
+                                            "overwrite": true,
+                                            "queryParametersSingleEncoded": true,
+                                            "source": "@triggerBody()?['Path']"
+                                        }
+                                    }
+                                },
+                                "Delete_blob_A": {
+                                    "runAfter": {
+                                        "Compose_Status:_Delete_Files": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "delete",
+                                        "path": "/datasets/default/files/@{encodeURIComponent(encodeURIComponent('/edi-process-split/A_',triggerBody()?['Name']))}"
+                                    }
+                                },
+                                "Delete_blob_B": {
+                                    "runAfter": {
+                                        "Delete_blob_A": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "delete",
+                                        "path": "/datasets/default/files/@{encodeURIComponent(encodeURIComponent('/edi-process-split/B_',triggerBody()?['Name']))}"
+                                    }
+                                },
+                                "Delete_blob_Large_File": {
+                                    "runAfter": {
+                                        "Delete_blob_B": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                            }
+                                        },
+                                        "method": "delete",
+                                        "path": "/datasets/default/files/@{encodeURIComponent(encodeURIComponent('/edi-process-split/',triggerBody()?['Name']))}"
+                                    }
+                                },
+                                "Function1_SPLIT_Half_1": {
+                                    "runAfter": {
+                                        "Compose": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Function",
+                                    "inputs": {
+                                        "body": {
+                                            "ediFileName": "@{triggerBody()?['Name']}",
+                                            "splitHalf": "1"
+                                        },
+                                        "function": {
+                                            "id": "[concat(parameters('sites_EdiSplitterFunc_externalid'), '/functions/Function1')]"
+                                        }
+                                    }
+                                },
+                                "Function1__SPLIT_Half_2": {
+                                    "runAfter": {
+                                        "Function1_SPLIT_Half_1": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Function",
+                                    "inputs": {
+                                        "body": {
+                                            "ediFileName": "@{triggerBody()?['Name']}",
+                                            "splitHalf": "2"
+                                        },
+                                        "function": {
+                                            "id": "[concat(parameters('sites_EdiSplitterFunc_externalid'), '/functions/Function1')]"
+                                        }
+                                    }
+                                }
+                            },
+                            "runAfter": {},
+                            "else": {
+                                "actions": {
+                                    "Copy_blob_TO_EDI_Archive": {
+                                        "runAfter": {},
+                                        "type": "ApiConnection",
+                                        "inputs": {
+                                            "host": {
+                                                "connection": {
+                                                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                                }
+                                            },
+                                            "method": "post",
+                                            "path": "/datasets/default/copyFile",
+                                            "queries": {
+                                                "destination": "/edi-archive/@{triggerBody()?['Name']}",
+                                                "overwrite": true,
+                                                "queryParametersSingleEncoded": true,
+                                                "source": "/edi-incoming/@{triggerBody()?['Name']}"
+                                            }
+                                        }
+                                    },
+                                    "HTTP_-_CALL_EDI_Logic_App": {
+                                        "runAfter": {
+                                            "Copy_blob_TO_EDI_Archive": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "type": "Http",
+                                        "inputs": {
+                                            "body": "@triggerBody()?['Name']",
+                                            "method": "POST",
+                                            "uri": "https://prod-00-jbupsiseenv-tf6wvmaltossm.eastus2.environments.microsoftazurelogicapps.net:443/workflows/563addc9e7924d8db9a15386f0d40eb8/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=PvXDV2Td7wKta9cpe13PHzy9Cr7Uav5xzVGowOPH1Bo"
+                                        }
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "greater": [
+                                            "@triggerBody()?['Size']",
+                                            50000000
+                                        ]
+                                    }
+                                ]
+                            },
+                            "type": "If"
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azureblob": {
+                                "connectionId": "[parameters('connections_azureblob_externalid')]",
+                                "connectionName": "azureblob",
+                                "id": "/subscriptions/82d7b191-5a8c-4cbf-a9f9-9aa5fb50feaa/providers/Microsoft.Web/locations/eastus2/managedApis/azureblob"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
